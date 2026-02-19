@@ -4,10 +4,9 @@ import { api } from "@/convex/_generated/api";
 import { MemoryCard } from "./memory-card";
 
 export function MemoryList({ query }: { query: string }) {
-  const memories = useQuery(
-    query ? api.memories.search : api.memories.list,
-    query ? { query } : {}
-  ) ?? [];
+  const searchResults = useQuery(api.memories.search, query ? { query } : "skip");
+  const allResults = useQuery(api.memories.list, query ? "skip" : {});
+  const memories = (query ? searchResults : allResults) ?? [];
 
   if (memories.length === 0) {
     return (
