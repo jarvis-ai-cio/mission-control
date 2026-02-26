@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mission Control
 
-## Getting Started
+Jarvis's command centre. A Next.js dashboard backed by Convex for real-time task management, memory browsing, and agent orchestration.
 
-First, run the development server:
+## Stack
+
+- **Next.js** (App Router, TypeScript)
+- **Convex** — real-time database + backend functions
+- **shadcn/ui + Tailwind CSS** — UI components
+- **@dnd-kit** — drag-and-drop task board
+
+---
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js 20+
+- npm / pnpm
+- A [Convex](https://convex.dev) account (free tier is fine)
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/jarvis-ai-cio/mission-control.git
+cd mission-control
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Set up Convex
+
+If you haven't already, install the Convex CLI:
+
+```bash
+npm install -g convex
+```
+
+Log in and initialise the project:
+
+```bash
+npx convex dev
+```
+
+This will:
+- Prompt you to log in to Convex
+- Create a new project (or link to an existing one)
+- Deploy your schema and functions
+- Print your `NEXT_PUBLIC_CONVEX_URL`
+
+### 4. Configure environment variables
+
+Create a `.env.local` file in the project root:
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in the values:
+
+```env
+# From `npx convex dev` output
+NEXT_PUBLIC_CONVEX_URL=https://<your-deployment>.convex.cloud
+
+# Jarvis Gateway — only needed if using the /api/cron sync endpoint
+# Leave blank for local dev unless you're testing agent memory sync
+OPENCLAW_GATEWAY_URL=https://jarvis.lemming-neon.ts.net
+OPENCLAW_GATEWAY_TOKEN=<your-gateway-token>
+```
+
+### 5. Run the dev server
+
+In one terminal, keep Convex running:
+
+```bash
+npx convex dev
+```
+
+In another terminal, start Next.js:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables Reference
 
-## Learn More
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_CONVEX_URL` | ✅ | Convex deployment URL — from `npx convex dev` |
+| `OPENCLAW_GATEWAY_URL` | Optional | Jarvis gateway base URL — for memory sync cron |
+| `OPENCLAW_GATEWAY_TOKEN` | Optional | Jarvis gateway auth token — for memory sync cron |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/                  # Next.js App Router pages + API routes
+  api/cron/           # Memory sync endpoint (called by Jarvis cron)
+components/           # Shared UI components
+convex/               # Convex schema + backend functions
+  schema.ts           # Database schema (tasks, memories)
+  tasks.ts            # Task CRUD functions
+  memories.ts         # Memory sync functions
+lib/                  # Client utilities
+  convex-provider.tsx # Convex client provider
+hooks/                # React hooks
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The production instance is deployed via FluxCD on DigitalOcean Kubernetes. See `interstellar-labs/do-k8s-infra` for the Helm configuration.
+
+For ad-hoc deployment, this project can be deployed to Vercel with zero config — just set the environment variables in the Vercel dashboard.
